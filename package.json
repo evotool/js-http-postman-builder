@@ -21,8 +21,8 @@
 		"url": "^0.11.0"
 	},
 	"devDependencies": {
-		"@evojs/eslint-plugin": "^0.0.4",
-		"@evojs/http": "0.0.4",
+		"@evojs/eslint-plugin": "^0.0.5",
+		"@evojs/http": "^0.0.4",
 		"@evojs/http-client": "^0.0.0-alpha0",
 		"@evojs/validator": "^0.0.6",
 		"@types/content-type": "^1.1.3",
