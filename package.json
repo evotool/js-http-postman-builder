@@ -1,6 +1,6 @@
 {
 	"name": "@evojs/http-postman-builder",
-	"version": "0.0.0-alpha0",
+	"version": "0.0.0-alpha1",
 	"description": "HttpPostmanBuilder class for @evojs/http",
 	"license": "MIT",
 	"main": "index.js",

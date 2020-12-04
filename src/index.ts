@@ -316,16 +316,12 @@ export class HttpPostmanBuilder {
 					if (d.type === 'object' || d.type === 'array') {
 						const { nested, schema, ...croppedData } = d as ObjectRule;
 
-						if (Object.keys(croppedData).length > 1) {
-							return inspect(croppedData, false, null, false).replace(/\n+ */g, ' ')
-								.trim();
-						}
+						return this._inspect(croppedData);
 					}
 				}).filter(Boolean);
 
 				if (rules.length) {
-					return inspect(rules, false, null, false).replace(/\n+ */g, ' ')
-						.trim();
+					return this._inspect(rules);
 				}
 
 				return;
@@ -334,17 +330,10 @@ export class HttpPostmanBuilder {
 			if (data.type === 'object' || data.type === 'array') {
 				const { nested, schema, ...croppedData } = data as ObjectRule;
 
-				if (Object.keys(croppedData).length > 1) {
-					return inspect(croppedData, false, null, false).replace(/\n+ */g, ' ')
-						.trim();
-				}
-
-				return;
+				return this._inspect(croppedData);
 			}
 
-			return inspect(data, false, null, false)
-				.replace(/\n+ */g, ' ')
-				.trim();
+			return this._inspect(data);
 		}
 	}
 
@@ -388,6 +377,38 @@ export class HttpPostmanBuilder {
 		const path = url.split('/').slice(1);
 
 		return { folders, url, host, path, variable };
+	}
+
+	protected _keyLength(object: { [key: string]: any }): number {
+		let count = 0;
+
+		for (const p in object) {
+			if (!object.hasOwnProperty(p) || object[p] === undefined) {
+				continue;
+			}
+
+			count++;
+		}
+
+		return count;
+	}
+
+	protected _inspect(object: { [key: string]: any }): string | undefined {
+		if (this._keyLength(object) === 0) {
+			return;
+		}
+
+		object = { ...object };
+
+		for (const p in object) {
+			if (!object.hasOwnProperty(p) || object[p] !== undefined) {
+				continue;
+			}
+
+			delete object[p];
+		}
+
+		return inspect(object, false, null, false).replace(/\n+ */g, ' ').trim();
 	}
 }
 
