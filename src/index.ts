@@ -110,7 +110,7 @@ export class HttpPostmanBuilder {
 
 		this._collectionSchema.info.name += ` ${new Date().toISOString()
 			.substring(0, 19)
-			.replace(/[^\d]+/g, '')}`;
+			.replace('T', ' ')}`;
 
 		await Promise.all(
 			this._options.apiKeys!
