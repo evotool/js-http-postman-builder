@@ -1,6 +1,6 @@
 {
 	"name": "@evojs/http-postman-builder",
-	"version": "0.0.0-alpha5",
+	"version": "0.0.0-alpha6",
 	"description": "HttpPostmanBuilder class for @evojs/http",
 	"license": "MIT",
 	"main": "index.js",
@@ -36,7 +36,7 @@
 		"typescript": "^4.1.2"
 	},
 	"peerDependencies": {
-		"@evojs/http": ">=0.1.0",
+		"@evojs/http": ">=0.1.2",
 		"@evojs/http-client": "<=1.0.0",
 		"@evojs/validator": ">=0.0.6"
 	},
