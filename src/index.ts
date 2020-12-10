@@ -12,18 +12,6 @@ export class HttpPostmanBuilder {
 	protected readonly _environmentSchema: PostmanEnvironmentSchema = { name: '', values: [] };
 
 	constructor(protected readonly _options: PostmanBuilderOptions, protected _logger?: Logger) {
-		if (!_options.variableReplacers) {
-			_options.variableReplacers = [];
-		}
-
-		for (const vr of _options.variableReplacers) {
-			if (vr.prefixes) {
-				continue;
-			}
-
-			vr.prefixes = ['2', '3'];
-		}
-
 		if (!_options.apiKeys) {
 			_options.apiKeys = [];
 		}
@@ -419,13 +407,6 @@ export interface PostmanBuilderOptions {
 		[key: string]: string;
 	};
 	authorization?(endpoint: BuiltEndpoint): Auth | undefined;
-	variableReplacers?: {
-		pattern: string;
-		key: string;
-		value: string;
-		prefixes?: string[];
-		description?: string;
-	}[];
 	apiKeys?: string[];
 	debug?: boolean;
 }
