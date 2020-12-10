@@ -1,5 +1,6 @@
 import { BodyType, BuiltEndpoint, HttpMethod } from '@evojs/http';
 import { HttpClient } from '@evojs/http-client';
+import { ParamSchema } from '@evojs/http/decorators/Endpoint';
 import { ObjectRule, PrimitiveRule, ValidationRule, ValidationSchema } from '@evojs/validator';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve as pathResolve } from 'path';
@@ -20,7 +21,7 @@ export class HttpPostmanBuilder {
 				continue;
 			}
 
-			vr.prefixes = ['second', 'third'];
+			vr.prefixes = ['2', '3'];
 		}
 
 		if (!_options.apiKeys) {
@@ -50,7 +51,7 @@ export class HttpPostmanBuilder {
 
 		for (const e of endpoints) {
 			let item: (FolderItem | Item)[] = this._collectionSchema.item as FolderItem[];
-			const location = this._parseLocation(e.locationTemplate);
+			const location = this._parseLocation(e.path, e.param, e.paramOrder);
 			const query = this._parseQuery(e.query);
 			const bodyData = this._parseBody(e.body, e.bodyType) || '{}';
 
@@ -138,8 +139,7 @@ export class HttpPostmanBuilder {
 		if (body) {
 			switch (bodyType) {
 				case 'json': {
-					const out = Object.keys(body)
-						.reduce((p, n) => Object.assign(p, { [n]: this._parseRuleToJsonc(body[n]) }), {});
+					const out = Object.keys(body).reduce((p, n) => Object.assign(p, { [n]: this._parseRuleToJsonc(body[n]) }), {});
 
 					return this._stringifyJsonc([out]);
 				}
@@ -338,45 +338,36 @@ export class HttpPostmanBuilder {
 	}
 
 	protected _parseLocation(
-		locationTemplate: string,
+		path: string,
+		param: ParamSchema,
+		paramOrder: string[],
 		maxFolders: number = 2,
 	): { folders: string[]; url: string; host: string[]; path: string[]; variable: Variable[] } {
-		const folders = locationTemplate.substring(1).split('/')
-			.slice(0, maxFolders);
+		const paths = path.substring(1).split('/');
+		const folders = paths.slice(0, maxFolders);
+
+		path = paths.map((p) => {
+			let match: RegExpExecArray | null;
+
+			if (match = (/^:([a-z_$][a-z0-9_$]*)(\(.*\))?$/i).exec(p)) {
+				const [param] = Array.from(match).slice(1);
+
+				return `:${param}`;
+			}
+
+			return p;
+		}).join('/');
+
 		const variable: Variable[] = [];
-		let url = locationTemplate;
 
-		for (const r of this._options.variableReplacers!) {
-			url = url.split('/').map((u) => {
-				if (u === r.pattern) {
-					let key: string = r.key,
-						c = 0;
-
-					while (variable.find((x) => x.key === key)) {
-						key = `${r.key}${r.prefixes![c] || (c + 1)}`;
-						c++;
-					}
-
-					variable.push({
-						key,
-						value: r.value,
-						description: r.description,
-					});
-
-					return `:${key}`;
-				}
-
-				return u;
-			})
-				.join('/');
+		for (const key of paramOrder) {
+			variable.push({ key, value: '', description: inspect(param[key], false, null, false) });
 		}
 
-		url = `{{host}}${url}`;
-
+		const url = `{{host}}/${path}`;
 		const host = ['{{host}}'];
-		const path = url.split('/').slice(1);
 
-		return { folders, url, host, path, variable };
+		return { folders, url, host, path: path.split('/'), variable };
 	}
 
 	protected _keyLength(object: { [key: string]: any }): number {
