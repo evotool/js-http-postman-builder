@@ -83,32 +83,38 @@ export class HttpPostmanBuilder {
 		}
 	}
 
-	generate(): void {
+	generate(): boolean {
 		const { collection, environment } = this._options.files;
 
 		if (!this._collectionChanged(collection)) {
-			return;
+			return false;
 		}
 
 		this._writeToFile(collection, this._collectionSchema);
 		this._writeToFile(environment, this._environmentSchema);
+
+		return true;
 	}
 
-	async generateAndSend(): Promise<void> {
-		this.generate();
+	async generateAndSend(): Promise<boolean> {
+		if (!this.generate()) {
+			return false;
+		}
 
-		this._collectionSchema.info.name += ` ${new Date().toISOString()
-			.substring(0, 19)
-			.replace('T', ' ')}`;
+		const collectionSchema = { ...this._collectionSchema, info: { ...this._collectionSchema.info } };
+
+		collectionSchema.info.name += ` ${new Date().toISOString().substring(0, 19).replace('T', ' ')}`;
 
 		await Promise.all(
 			this._options.apiKeys!
 				.map(
 					(x) => this._http
-						.post(`collections`, { headers: { 'X-Api-Key': x }, body: { collection: this._collectionSchema } })
+						.post(`collections`, { headers: { 'X-Api-Key': x }, body: { collection: collectionSchema } })
 						.then((res) => res.body()),
 				),
 		);
+
+		return true;
 	}
 
 	protected _writeToFile(filename: string, data: object): void {
@@ -224,9 +230,8 @@ export class HttpPostmanBuilder {
 
 						break;
 					case 'array':
-						if (rule.nested) {
-							out[0] = Array(rule.length || 1).fill(null)
-								.map(() => this._parseRuleToJsonc(rule.nested!));
+						if ((rule.nested && !Array.isArray(rule.nested) && rule.nested.type !== 'array' && rule.nested.type !== 'object') || Array.isArray(rule.nested)) {
+							out[0] = Array(rule.length || 1).fill(null).map(() => this._parseRuleToJsonc(rule.nested!));
 						} else {
 							out[0] = [];
 						}
@@ -234,7 +239,7 @@ export class HttpPostmanBuilder {
 						break;
 					case 'object':
 						if (rule.schema) {
-							out[0] = Object.keys(rule.schema).reduce((p, n) => Object.assign(p, { [n]: this._parseRuleToJsonc(rule.schema![n]) }), {});
+							out[0] = Object.fromEntries(Object.keys(rule.schema).map((key) => [key, this._parseRuleToJsonc(rule.schema![key])]));
 						} else {
 							out[0] = {};
 						}
@@ -301,11 +306,17 @@ export class HttpPostmanBuilder {
 		if (data) {
 			if (Array.isArray(data)) {
 				const rules = data.map((d) => {
-					if (d.type === 'object' || d.type === 'array') {
-						const { nested, schema, ...croppedData } = d as ObjectRule;
-
-						return this._inspect(croppedData);
+					if (d.type !== 'object' && d.type !== 'array') {
+						return;
 					}
+
+					if (d.nested && !Array.isArray(d.nested) && d.nested.type !== 'object' && d.nested.type !== 'array') {
+						return this._inspect(d);
+					}
+
+					const { nested, schema, ...croppedData } = d as ObjectRule;
+
+					return this._inspect(croppedData);
 				}).filter(Boolean);
 
 				if (rules.length) {
@@ -315,13 +326,23 @@ export class HttpPostmanBuilder {
 				return;
 			}
 
-			if (data.type === 'object' || data.type === 'array') {
-				const { nested, schema, ...croppedData } = data as ObjectRule;
-
-				return this._inspect(croppedData);
+			if (
+				(
+					data.type !== 'object'
+					&& data.type !== 'array'
+				) || (
+					data.nested
+					&& !Array.isArray(data.nested)
+					&& data.nested.type !== 'object'
+					&& data.nested.type !== 'array'
+				)
+			) {
+				return this._inspect(data);
 			}
 
-			return this._inspect(data);
+			const { nested, schema, ...croppedData } = data as ObjectRule;
+
+			return this._inspect(croppedData);
 		}
 	}
 
