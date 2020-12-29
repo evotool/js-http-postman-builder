@@ -187,7 +187,7 @@ function parseBody(bodyRule: ValidationRule | undefined, bodyType: BodyType | un
 			if (commentsInJson) {
 				return `${jsonData}
 /*
-${inspect(bodyRule, true)}
+${inspect(!Array.isArray(bodyRule) && bodyRule && bodyRule.type === 'object' && bodyRule.schema && !bodyRule.nested ? bodyRule.schema : bodyRule, true)}
 */`;
 			}
 
