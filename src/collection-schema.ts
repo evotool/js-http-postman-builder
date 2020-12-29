@@ -225,12 +225,12 @@ ${inspect(bodyRule, true)}
 	}
 }
 
-function buildItems(rootItem: (FolderItem | Item)[], endpoints: BuiltEndpoint[], options: BuildCollectionOptions): (FolderItem | Item)[] {
+function buildItems(endpoints: BuiltEndpoint[], options: BuildCollectionOptions): (FolderItem | Item)[] {
 	const out: (FolderItem | Item)[] = [];
 
 	for (const e of endpoints) {
-		let item: (FolderItem | Item)[] = rootItem;
-		const location = parseLocation(e.path, e.param, e.paramOrder);
+		let item: (FolderItem | Item)[] = out;
+		const location = parseLocation(e.path, e.param, e.paramOrder, options.maxFolders);
 		const query = parseQuery(e.query);
 		const bodyData = parseBody(e.bodyRule, e.bodyType, options.commentsInJson!);
 
@@ -273,9 +273,8 @@ function buildItems(rootItem: (FolderItem | Item)[], endpoints: BuiltEndpoint[],
 }
 
 export function buildCollection(name: string, endpoints: BuiltEndpoint[], options: BuildCollectionOptions = {}): PostmanCollectionSchema {
-	if (typeof options.commentsInJson === 'undefined') {
-		options.commentsInJson = true;
-	}
+	options.commentsInJson ??= true;
+	options.maxFolders ??= 2;
 
 	const collectionSchema: PostmanCollectionSchema = {
 		info: {
@@ -285,7 +284,7 @@ export function buildCollection(name: string, endpoints: BuiltEndpoint[], option
 		item: [],
 	};
 
-	collectionSchema.item = buildItems(collectionSchema.item, endpoints, options);
+	collectionSchema.item = buildItems(endpoints, options);
 
 	return collectionSchema;
 }
@@ -297,6 +296,12 @@ export interface BuildCollectionOptions {
 	 * @default true
 	 */
 	commentsInJson?: boolean;
+
+	/**
+	 * Max folders
+	 * @default 2
+	 */
+	maxFolders?: number;
 	authorization?(endpoint: BuiltEndpoint): Auth | undefined;
 }
 
