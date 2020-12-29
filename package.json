@@ -1,7 +1,7 @@
 {
 	"name": "@evojs/http-postman-builder",
-	"version": "0.0.1-alpha0",
-	"description": "HttpPostmanBuilder class for @evojs/http",
+	"version": "0.1.1",
+	"description": "Postman collection builder @evojs/http",
 	"license": "MIT",
 	"main": "index.js",
 	"typings": "index.d.ts",
@@ -13,31 +13,20 @@
 		"test": "jest --coverage --detectOpenHandles",
 		"lint": "eslint \"src/**/*.ts\" -f codeframe"
 	},
-	"dependencies": {
-		"content-type": "^1.0.4",
-		"form-data": "^3.0.0",
-		"http": "0.0.1-security",
-		"https": "^1.0.0",
-		"url": "^0.11.0"
-	},
 	"devDependencies": {
-		"@evojs/eslint-plugin": "^0.0.5",
-		"@evojs/http": "^0.2.1",
-		"@evojs/http-client": "0.0.1-alpha0",
-		"@evojs/validator": "^0.1.0",
-		"@types/content-type": "^1.1.3",
+		"@evojs/eslint-plugin": "^0.1.0",
+		"@evojs/http": "^0.2.2",
+		"@evojs/validator": "^0.1.1",
 		"@types/jest": "^26.0.19",
-		"@types/node": "^14.14.14",
+		"@types/node": "^14.14.16",
 		"eslint": "^7.16.0",
-		"fs": "0.0.1-security",
+		"glob": "^7.1.6",
 		"jest": "^26.6.3",
-		"path": "^0.12.7",
 		"ts-jest": "^26.4.4",
 		"typescript": "^4.1.3"
 	},
 	"peerDependencies": {
 		"@evojs/http": ">=0.2.1",
-		"@evojs/http-client": ">=0.0.1-alpha0",
 		"@evojs/validator": ">=0.1.0"
 	},
 	"jest": {
@@ -81,6 +70,7 @@
 		"evojs",
 		"http",
 		"postman",
+		"collection",
 		"builder"
 	],
 	"repository": {
