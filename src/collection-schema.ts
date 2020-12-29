@@ -143,7 +143,7 @@ function parseRuleToJsonData(validationRule: ValidationRule): JsonData {
 		case 'boolean':
 			return false;
 		case 'object':
-			return primitiveRule.schema ? Object.entries(primitiveRule.schema).reduce((p, [key, rule]) => ({ [key]: parseRuleToJsonData(rule) }), {}) : {};
+			return primitiveRule.schema ? Object.entries(primitiveRule.schema).reduce((p, [key, rule]) => ({ ...p, [key]: parseRuleToJsonData(rule) }), {}) : {};
 		case 'array': {
 			const out: JsonData[] = [];
 
